@@ -1,0 +1,21 @@
+{
+  "$schema": "../../schemas/0.json",
+  "module": "../../index.js",
+  "db": {
+    "connectionString": "sqlite://./db.sqlite"
+  },
+  "watch": {
+    "ignore": [
+      "*.sqlite",
+      "*.sqlite-journal"
+    ]
+  },
+  "server": {
+    "hostname": "127.0.0.1",
+    "port": "3042"
+  },
+  "migrations": {
+    "dir": "./migrations",
+    "autoApply": true
+  }
+}
