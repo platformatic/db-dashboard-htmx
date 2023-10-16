@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/platformatic/db-dashboard-htmx#readme",
   "dependencies": {
+    "@fastify/formbody": "^7.4.0",
     "@fastify/static": "^6.11.2",
     "@platformatic/db": "^1.0.0",
     "common-tags": "^1.8.2",

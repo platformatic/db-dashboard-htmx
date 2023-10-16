@@ -5,10 +5,7 @@
     "connectionString": "sqlite://./db.sqlite"
   },
   "watch": {
-    "ignore": [
-      "*.sqlite",
-      "*.sqlite-journal"
-    ]
+    "allow": ["platformatic.json", "../../routes/*.js", "../../plugins/*.js"]
   },
   "server": {
     "hostname": "127.0.0.1",

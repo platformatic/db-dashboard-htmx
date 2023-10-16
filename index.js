@@ -56,5 +56,9 @@ dbDashboard.configManagerConfig = {
   async transformConfig () {
     // Call the transformConfig method from the base stackable
     platformaticDB.configManagerConfig.transformConfig.call(this)
+
+    this.current.plugins = {
+      paths: []
+    }
   }
 }

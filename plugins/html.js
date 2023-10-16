@@ -1,13 +1,15 @@
 import html from 'fastify-html'
 import fastifyStatic from '@fastify/static'
+import formBody from '@fastify/formbody'
 import { join } from 'desm'
 import tags from 'common-tags'
 
 function link (table) {
-  return tags.html`<a hx-swap="outerHTML" hx-target="#content" hx-get="/tables/${table}" hx-trigger="click" href="/tables/${table}" hx-push-url="true">${table}</a>`
+  return tags.html`<a hx-swap="innerHTML" hx-target="#content" hx-get="/tables/${table}" hx-trigger="click" href="/tables/${table}" hx-push-url="true">${table}</a>`
 }
 
 export default async function (fastify, opts) {
+  fastify.register(formBody)
   await fastify.register(html)
 
   fastify.addLayout(function (inner, reply) {
