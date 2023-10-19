@@ -24,6 +24,21 @@ export default async function (fastify, opts) {
     }
   })
 
+  function getPrimaryKey (entity) {
+    // TODO support systems with multiple primary keys
+    const primaryKey = Object.keys(entity.fields).reduce((acc, field) => {
+      if (acc) {
+        return acc
+      }
+
+      if (entity.fields[field].primaryKey) {
+        return field
+      }
+    }, '')
+
+    return primaryKey
+  }
+
   fastify.get('/tables/:table', {
     schema: {
       params: {
@@ -53,15 +68,7 @@ export default async function (fastify, opts) {
     const entity = tables[table]
     const columns = Object.keys(entity.fields)
 
-    const primaryKey = Object.keys(entity.fields).reduce((acc, field) => {
-      if (acc) {
-        return acc
-      }
-
-      if (entity.fields[field].primaryKey) {
-        return field
-      }
-    }, '')
+    const primaryKey = getPrimaryKey(entity)
 
     const [count, rows] = await Promise.all([
       entity.count(),
@@ -85,15 +92,13 @@ export default async function (fastify, opts) {
 
     return reply.html`
       <section>
-        <header>
-          <h3>${table}</h3>
-        </header>
+        <h3>${table}</h3>
       </section>
       <section>
         <table>
           <thead>
             ${columns.map(column => tags.html`<th>${column}</th>`)}
-            <th>Actions</th>
+            <th></th>
           </thead>
           <tbody>
             ${rows.map(row => tags.html`
@@ -111,6 +116,13 @@ export default async function (fastify, opts) {
                   hx-swap="innerHTML"
                   hx-push-url="true"
                 >Edit</a>
+
+                <a 
+                  hx-delete="/tables/${table}/${row[primaryKey]}"
+                  hx-trigger="click"
+                  hx-target="#content"
+                  hx-swap="innerHTML"
+                >Delete</a>
               </td>
             `)}
             <tr>
@@ -207,7 +219,32 @@ export default async function (fastify, opts) {
 
     await entity.save({ input: row })
 
-    return reply.redirect(`/tables/${table}`)
+    reply.status(204)
+    reply.header('hx-location', JSON.stringify({
+      path: `/tables/${table}`,
+      swap: 'innerHTML',
+      target: '#' + request.headers['hx-target']
+    }))
+    return
+  })
+
+  // TODO add schema validation for the entity
+  fastify.delete('/tables/:table/:id', {
+  }, async (request, reply) => {
+    const { table } = request
+    const entity = tables[table]
+    const primaryKey = getPrimaryKey(entity)
+
+    await entity.delete({ where: { [primaryKey]: { eq: request.params.id } } })
+
+    request.log.info({ headers: request.headers }, 'headers')
+    reply.status(204)
+    reply.header('hx-location', JSON.stringify({
+      path: `/tables/${table}`,
+      swap: 'innerHTML',
+      target: '#' + request.headers['hx-target']
+    }))
+    return 
   })
 }
 
