@@ -1,5 +1,9 @@
 import tags from 'common-tags'
 
+function link (table) {
+  return tags.html`<a hx-swap="innerHTML" hx-target="#content" hx-get="/tables/${table}" hx-trigger="click" href="/tables/${table}" hx-push-url="true">${table}</a>`
+}
+
 /** @param {import('fastify').FastifyInstance} fastify */
 export default async function (fastify, opts) {
   let tables
@@ -92,7 +96,18 @@ export default async function (fastify, opts) {
 
     return reply.html`
       <section>
-        <h3>${table}</h3>
+        ${Object.values(tables).map(table => {
+
+          if (table.table === request.table) {
+            return tags.html`
+              <u>${table.table}</u>
+            `
+          } else {
+            return tags.html`
+              ${link(table.table)}
+            `}
+          }
+        )}
       </section>
       <section>
         <table>
@@ -141,6 +156,8 @@ export default async function (fastify, opts) {
                   hx-trigger="click"
                   hx-target="#content"
                   hx-swap="innerHTML"
+                  hx-disabled-elt="this"
+                  role="button"
                 >Delete</a>
               </td>
             `)}
@@ -161,8 +178,6 @@ export default async function (fastify, opts) {
   function renderForm (table, row, reply, title, button) {
     const entity = tables[table]
     const columns = Object.keys(entity.fields)
-
-    console.log(row)
 
     return reply.html`
       <section>
@@ -189,6 +204,7 @@ export default async function (fastify, opts) {
             hx-target="#content"
             hx-swap="innerHTML"
             hx-push-url="true"
+            hx-disabled-elt="this"
             >${button}</button>
         </form>
       </section>

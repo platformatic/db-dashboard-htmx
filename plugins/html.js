@@ -4,41 +4,27 @@ import formBody from '@fastify/formbody'
 import { join } from 'desm'
 import tags from 'common-tags'
 
-function link (table) {
-  return tags.html`<a hx-swap="innerHTML" hx-target="#content" hx-get="/tables/${table}" hx-trigger="click" href="/tables/${table}" hx-push-url="true">${table}</a>`
-}
-
 export default async function (fastify, opts) {
   fastify.register(formBody)
   await fastify.register(html)
 
   fastify.addLayout(function (inner, reply) {
-    const entities = fastify.platformatic.entities
-    const tables = Object.values(entities).map(({ table }) => table)
 
     return fastify.tags.html`
     <!DOCTYPE html>
     <html lang="en">
       <head>
         <script src="/static/htmx.js"></script>
-        <link rel="stylesheet" href="/static/mvp.css">
+        <link rel="stylesheet" href="/static/water.css">
+        <link rel="preload" href="/static/spinner.svg" as="image">
       </head>
       <body>
         <header>
-          <nav>
-            <ul>
-                <li><a href="https://docs.platformatic.dev">Docs</a></li>
-                <li><a href="#">Tables</a>
-                    <ul>
-                      ${tables.map(table => tags.html`
-                        <li>${link(table)}</li>
-                      `)}
-                    </ul>
-                </li>
-            </ul>
-          </nav>
+          <h1>Platformatic DB Dashboard
+            <img id="indicator" class="htmx-indicator" src='/static/spinner.svg' />
+          </h1>
         </header>
-        <div id="content">
+        <div id="content" hx-indicator="#indicator">
           ${inner}
         </div>
       </body>
@@ -53,12 +39,16 @@ export default async function (fastify, opts) {
       root: join(import.meta.url, '..')
     })
 
-    fastify.get('/static/mvp.css', function (request, reply) {
-      reply.sendFile('node_modules/mvp.css/mvp.css')
+    fastify.get('/static/water.css', function (request, reply) {
+      reply.sendFile('node_modules/water.css/out/water.min.css')
     })
 
     fastify.get('/static/htmx.js', function (request, reply) {
       reply.sendFile('node_modules/htmx.org/dist/htmx.min.js')
+    })
+
+    fastify.get('/static/spinner.svg', function (request, reply) {
+      reply.sendFile('static/oval.svg')
     })
   })
 }
