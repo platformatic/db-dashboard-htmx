@@ -103,9 +103,28 @@ export default async function (fastify, opts) {
           <tbody>
             ${rows.map(row => tags.html`
               <tr>
-                ${columns.map((column) => tags.html`
-                  <td>${row[entity.fields[column].camelcase]}</td>
-                `)}
+                ${columns.map((column) => {
+                  const field = entity.fields[column]
+                  const value = row[field.camelcase]
+                  if (field.foreignKey) {
+                    const relation = entity.relations.find(relation => relation.column_name === column)
+                    const foreignTable = relation.foreign_table_name
+                    return tags.html`
+                      <td><a 
+                          href="/tables/${foreignTable}/${value}"
+                          hx-get="/tables/${foreignTable}/${value}"
+                          hx-trigger="click"
+                          hx-target="#content"
+                          hx-swap="innerHTML"
+                          hx-push-url="true"
+                        >${value}</a></td>
+                    `
+                  } else {
+                    return tags.html`
+                      <td>${value}</td>
+                    `
+                  }
+                })}
               </th>
               <td>
                 <a 
